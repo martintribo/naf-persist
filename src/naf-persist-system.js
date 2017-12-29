@@ -28,6 +28,8 @@ AFRAME.registerSystem('naf-persist', {
 
         // If the entity has the networked component, and not a persistId, use the networkId
         // This might mean the persist system needs to wait on the networked component to recieve an ID
+        // This is important when using checkNafBeforeFetch, otherwise other clients will not be able to
+        // Correlate the networked entity with the persist entity
         useNafId: {
             'default': true
         },
@@ -36,6 +38,16 @@ AFRAME.registerSystem('naf-persist', {
         checkNafBeforeFetch: {
             default: true
         },
+
+        // TODO: Add setting for listening to add/remove events from PouchDB
+
+        // TODO: Settings for when to prefer local or remote settings for an entity
+        // Prefer local settings when...
+        // - Client wants to reinitialize entity? Maybe should just explicitly delete then
+        // - During live db sync. Another client might make a change, but you want to prefer your state
+        // Prefer remote settings when...
+        // - In NAF and another client is broadcasting the most up to date netity
+        // - When a singleton is being used. The initial local entity is the initial state. Want to use up to date stored state
 
         // Note: When using NAF, behavior might be modified-
         // Wait until NAF syncs entities from other clients, as they might have persistId
@@ -46,6 +58,13 @@ AFRAME.registerSystem('naf-persist', {
         // This can be a local thing that only activates when a NAF id is attached to the entity
         // How does this behavior work with the persist settings above?
         // NAF compatibility can be accomplished without special behavior by using an initial wait and preferLocalOverRemote as false
+
+        // Should there be a way to save per user settings?
+        // These saved entities would not persist unless explicitly requested
+
+        // TODO: How to handle updating the persist db when multiple clients have persisted an obj
+        // Even if remote updates are not accepted after the first sync, the clients will be fighting over the obj
+        // Ideally, one client knows it is responsible for updating the obj. Maybe send an update on leaving?
 
         // TODO: Use NAF networkId when available?
 
@@ -91,19 +110,21 @@ AFRAME.registerSystem('naf-persist', {
             json['_rev'] = doc['_rev'];
         }).catch(e => {}).then(() => {
             return this.pouchdb.put(json);
-        }).then(function () {
+        }).then(() => {
             // TODO: What if entity has been removed?
-            entity.setAttribute(componentName, 'persisted', true);
-            console.log("persist finish");
-        }).catch(function () {
-            console.log("persist error");
-        });
+            if (document.body.contains(entity)) {
+                entity.setAttribute(componentName, 'persisted', true);
+            }
+        }).catch(e => {});
     },
     
     play: function () {
+        // TODO: Wait on NAF setting
+        // TODO: Figure out why play is not auto called
         // setTimeout(() => {
             this.pouchdb.allDocs().then(result => {
                 const ids = result.rows
+                    // TODO: Filter out entities that NAF already contains
                     // .filter(row => (this.entitiesMap[row.id] == null))
                     .map(row => row.id);
                 
@@ -146,6 +167,7 @@ AFRAME.registerSystem('naf-persist', {
         // var elements = doc.childNodes;
         // return elements;
 
+        // TODO: Check tagname is same. Check if attributes need to be removed
         var persistId = serializedDoc['_id'];
         var elementInfo = serializedDoc['serialization'];
 
