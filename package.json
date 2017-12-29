@@ -1,0 +1,29 @@
+{
+  "name": "naf-persist",
+  "version": "0.0.1",
+  "description": "A Networked Aframe persistence plugin based off PouchDB.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "webpack-dev-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/martintribo/naf-persist.git"
+  },
+  "keywords": [
+    "Aframe",
+    "A-Frame",
+    "NAF"
+  ],
+  "author": "Martin Tribo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/martintribo/naf-persist/issues"
+  },
+  "homepage": "https://github.com/martintribo/naf-persist#readme",
+  "dependencies": {
+    "webpack": "^3.10.0",
+    "webpack-dev-server": "^2.9.7"
+  }
+}
