@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "webpack-dev-server"
+    "start": "node ./server.js"
   },
   "repository": {
     "type": "git",
@@ -23,7 +23,13 @@
   },
   "homepage": "https://github.com/martintribo/naf-persist#readme",
   "dependencies": {
+    "easyrtc": "^1.1.0",
+    "express": "^4.16.2",
+    "serve-index": "^1.9.1",
+    "serve-static": "^1.13.1",
+    "socket.io": "^2.0.4",
     "webpack": "^3.10.0",
+    "webpack-dev-middleware": "^2.0.3",
     "webpack-dev-server": "^2.9.7"
   }
 }
