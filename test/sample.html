@@ -3,6 +3,9 @@
         <meta charset="UTF-8">
         <script src="https://unpkg.com/pouchdb@6.3.4/dist/pouchdb.js"></script>
         <script src="https://aframe.io/releases/0.7.0/aframe.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js"></script>
+        <script src="/easyrtc/easyrtc.js"></script>
+        <script src="https://unpkg.com/networked-aframe/dist/networked-aframe.min.js"></script>
         <script src="/build/bundle.js"></script>
         <!-- <script type="module" src="../src/index.js" async=false></script> -->
         <script>
@@ -32,12 +35,21 @@
                     });
                 }
             });
+
+            document.addEventListener('keydown', function (e) {
+                const sphere = document.createElement('a-sphere');
+                sphere.setAttribute('naf-persist', '');
+                sphere.setAttribute('colorchanger', '');
+                sphere.setAttribute('networked');
+                // sphere.setAttribute()
+                document.querySelector('a-scene').appendChild(sphere);
+            });
         </script>
     </head>
     <body>
-        <a-scene naf-persist>
-            <a-box naf-persist="persistId: foo1" colorchanger position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9"></a-box>
-            <a-sphere naf-persist color="red" colorchanger position="0 1.25 -5" radius="1"></a-sphere>
+        <a-scene naf-persist networked-scene="room: borrowing; adapter: wseasyrtc;">
+            <!-- <a-box naf-persist="persistId: foo1" colorchanger position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9"></a-box> -->
+            <!-- <a-sphere naf-persist color="red" colorchanger position="0 1.25 -5" radius="1"></a-sphere> -->
             <!-- <a-cylinder position="1 0.75 -3" radius="0.5" height="1.5" color="#FFC65D"></a-cylinder> -->
             <a-plane position="0 0 -4" rotation="-90 0 0" width="4" height="4" color="#7BC8A4"></a-plane>
             <a-sky color="black"></a-sky>

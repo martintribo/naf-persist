@@ -2,6 +2,7 @@ import { createNetworkId } from './utils.js';
 import { componentName } from './utils.js';
 
 AFRAME.registerComponent(componentName, {
+    dependencies: ['networked'],
     schema: {
         persisted: {
             default: false
@@ -15,7 +16,10 @@ AFRAME.registerComponent(componentName, {
         }
     },
     init: function () {
-        // const networked = this.components['networked'];
+        const networked = this.el.components['networked'];
+        if (networked != null && this.system.data.useNafId) {
+            this.el.setAttribute(componentName, 'persistId', networked.data.networkId);
+        }
         if (this.data.persistId == null || this.data.persistId === '') {
             this.el.setAttribute(componentName, 'persistId', createNetworkId());
             // this.updateSchema();

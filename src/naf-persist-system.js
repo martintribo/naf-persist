@@ -68,6 +68,19 @@ AFRAME.registerSystem('naf-persist', {
 
         // TODO: Use NAF networkId when available?
 
+        // BEHAVIOR FOR LIVE UPDATES
+        // Idea: Can use the rev id to manage updating the persist db.
+        // If no local rev id, always prefer persist db
+        // If local rev id matches server, update
+        // If server rev id has not changed over a few attempted updates, go ahead and update persistdb
+        // Probably should not take persist db entity if it has changed. That could lead to clients fighting each other. NAF should be used in this case
+        // What if the entity doesn't change? 
+        // - Can either store owner, or work based off last revision. Working based off last revision is more general purpose. But that means there must be ticks on active persists
+        // What if multiple clients connect at the same time. Each has an up to date revision id.
+        // - Each should wait a timeout before trying to update for the first time. This will let the other clients update first.
+
+        // For now, no live updates! That's only useful in advanced situations. NAF can be used instead to sync entities
+
         // How long the plugin waits (in ms) before syncing with the db
         initialWait: {
             default: 0
@@ -79,6 +92,21 @@ AFRAME.registerSystem('naf-persist', {
         this.entities = [];
         this.entitiesMap = {};
         this.nextSyncTime = Date.now() + this.data.updateRate;
+        if (!this.data.checkNafBeforeFetch || NAF == null) {
+            this.fetchEntities();
+        } else {
+            if (NAF != null && NAF.clientId != null) {
+                setTimeout(() => {
+                    this.fetchEntities();
+                }, 3000);
+            } else {
+                document.body.addEventListener('connected', () => {
+                    setTimeout(() => {
+                        this.fetchEntities();
+                    }, 3000);
+                });
+            }
+        }
         this.play();
     },
     tick: function () {
@@ -118,18 +146,20 @@ AFRAME.registerSystem('naf-persist', {
         }).catch(e => {});
     },
     
-    play: function () {
+    fetchEntities: function () {
         // TODO: Wait on NAF setting
         // TODO: Figure out why play is not auto called
         // setTimeout(() => {
             this.pouchdb.allDocs().then(result => {
-                const ids = result.rows
+                const createDocs = result.rows;
+                createDocs = createDocs.filter(row => (this.entitiesMap[row.id] == null));
                     // TODO: Filter out entities that NAF already contains
-                    // .filter(row => (this.entitiesMap[row.id] == null))
-                    .map(row => row.id);
+                if (this.data.checkNafBeforeFetch && NAF != null) {
+                    createDocs = createDocs.filter(row => !NAF.entities.hasEntity(row.id));
+                }
                 
                 return this.pouchdb.allDocs({
-                    'keys': ids,
+                    'keys': createDocs.map(row => row.id),
                     'include_docs': true
                 });
             }).then(results => {
